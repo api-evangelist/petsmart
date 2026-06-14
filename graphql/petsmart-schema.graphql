@@ -1,0 +1,991 @@
+# PetSmart Conceptual GraphQL Schema
+# Derived from public website, services, and app feature set.
+# PetSmart does not publish a public GraphQL API.
+
+# ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum PetType {
+  DOG
+  CAT
+  BIRD
+  FISH
+  REPTILE
+  SMALL_PET
+  LIVESTOCK
+  OTHER
+}
+
+enum SpeciesType {
+  CANINE
+  FELINE
+  AVIAN
+  AQUATIC
+  REPTILE
+  RODENT
+  RABBIT
+  FERRET
+  OTHER
+}
+
+enum OrderStatusType {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  RETURNED
+  REFUNDED
+}
+
+enum AppointmentStatus {
+  REQUESTED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum StoreServiceType {
+  GROOMING
+  TRAINING
+  PET_HOTEL
+  DAY_PET_CARE
+  BANFIELD_VET
+  ADOPTION
+  AQUATICS
+}
+
+enum GroomingServiceType {
+  BATH_AND_BRUSH
+  FULL_GROOM
+  NAIL_TRIM
+  TEETH_BRUSHING
+  EAR_CLEANING
+  DE_SHED
+  PUPPY_FIRST_GROOM
+}
+
+enum TrainingClassType {
+  PUPPY
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  PRIVATE_LESSON
+  BEHAVIOR_CONSULTATION
+}
+
+enum ShippingMethod {
+  STANDARD
+  EXPEDITED
+  OVERNIGHT
+  STORE_PICKUP
+  CURBSIDE_PICKUP
+  SAME_DAY
+}
+
+enum TokenType {
+  BEARER
+  API_KEY
+}
+
+# ─── Scalars ─────────────────────────────────────────────────────────────────
+
+scalar DateTime
+scalar Date
+scalar URL
+scalar JSON
+
+# ─── Store Domain ─────────────────────────────────────────────────────────────
+
+type Store {
+  id: ID!
+  storeNumber: String!
+  name: String!
+  address: Address!
+  phone: String
+  email: String
+  hours: [StoreHours!]!
+  services: StoreServices!
+  details: StoreDetails
+  location: StoreLocation!
+  isOpen: Boolean!
+  timezone: String
+}
+
+type StoreDetails {
+  storeId: ID!
+  squareFootage: Int
+  parkingAvailable: Boolean
+  wheelchairAccessible: Boolean
+  hasGrooming: Boolean!
+  hasPetHotel: Boolean!
+  hasTraining: Boolean!
+  hasBanfield: Boolean!
+  hasDayPetCare: Boolean!
+  hasAdoption: Boolean!
+  hasAquatics: Boolean!
+  openedDate: Date
+  renovatedDate: Date
+  manager: String
+}
+
+type StoreHours {
+  dayOfWeek: String!
+  openTime: String
+  closeTime: String
+  isClosed: Boolean!
+  isHoliday: Boolean
+  holidayName: String
+}
+
+type StoreServices {
+  storeId: ID!
+  grooming: Grooming
+  petHotel: PetHotel
+  training: Training
+  vetClinic: VetClinic
+  dayPetCare: DayPetCare
+  adoptionCenter: Boolean!
+  aquaticsCenter: Boolean!
+}
+
+type StoreLocation {
+  latitude: Float!
+  longitude: Float!
+  distanceMiles: Float
+}
+
+# ─── Services Domain ──────────────────────────────────────────────────────────
+
+type PetHotel {
+  storeId: ID!
+  name: String!
+  description: String
+  acceptsDogs: Boolean!
+  acceptsCats: Boolean!
+  suiteTypes: [String!]!
+  maxPetsPerSuite: Int
+  requiresVaccinations: Boolean!
+  checkInTime: String
+  checkOutTime: String
+  baseNightlyRate: Price
+  phone: String
+  bookingUrl: URL
+}
+
+type Grooming {
+  storeId: ID!
+  name: String!
+  description: String
+  services: [GroomingService!]!
+  acceptsDogs: Boolean!
+  acceptsCats: Boolean!
+  groomers: [PetStylist!]!
+  phone: String
+  bookingUrl: URL
+}
+
+type GroomingService {
+  id: ID!
+  type: GroomingServiceType!
+  name: String!
+  description: String
+  minPrice: Price
+  maxPrice: Price
+  durationMinutes: Int
+  eligibleSpecies: [SpeciesType!]!
+  addOns: [String!]
+}
+
+type Training {
+  storeId: ID!
+  name: String!
+  description: String
+  classes: [TrainingClass!]!
+  trainers: [String!]
+  phone: String
+  enrollmentUrl: URL
+}
+
+type TrainingClass {
+  id: ID!
+  type: TrainingClassType!
+  name: String!
+  description: String
+  durationWeeks: Int
+  sessionsPerWeek: Int
+  sessionLengthMinutes: Int
+  maxDogs: Int
+  price: Price
+  prerequisites: String
+  nextStartDate: Date
+  storeId: ID!
+}
+
+type VetClinic {
+  storeId: ID!
+  name: String!
+  description: String
+  banfield: Banfield
+  phone: String
+  acceptsNewPatients: Boolean!
+  servicesOffered: [String!]!
+  bookingUrl: URL
+}
+
+type Banfield {
+  hospitalId: ID!
+  storeId: ID!
+  name: String!
+  wellnessPlans: [String!]!
+  acceptedInsurance: [String!]
+  optimumWellnessPlan: Boolean!
+  phone: String
+  website: URL
+  veterinarians: [String!]
+}
+
+type DayPetCare {
+  storeId: ID!
+  name: String!
+  description: String
+  acceptsDogs: Boolean!
+  requiresVaccinations: Boolean!
+  dailyRate: Price
+  halfDayRate: Price
+  groupSize: Int
+  openTime: String
+  closeTime: String
+}
+
+type PetStylist {
+  id: ID!
+  storeId: ID!
+  name: String!
+  certifications: [String!]
+  specialties: [SpeciesType!]
+  yearsExperience: Int
+  bio: String
+  photoUrl: URL
+}
+
+# ─── Pet Domain ───────────────────────────────────────────────────────────────
+
+type Pet {
+  id: ID!
+  profile: PetProfile!
+  health: Health
+  records: [PetRecord!]!
+  vaccinationRecords: [VaccinationRecord!]!
+  appointments: [Appointment!]!
+  owner: PetParent!
+}
+
+type PetProfile {
+  id: ID!
+  name: String!
+  species: Species!
+  breed: Breed
+  age: Age
+  weight: Weight
+  color: String
+  microchipId: String
+  isNeutered: Boolean
+  isSpayed: Boolean
+  photoUrl: URL
+  notes: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Species {
+  id: ID!
+  type: SpeciesType!
+  name: String!
+  commonName: String
+  breeds: [Breed!]!
+}
+
+type Breed {
+  id: ID!
+  speciesId: ID!
+  name: String!
+  description: String
+  averageLifespan: String
+  averageWeight: String
+  temperament: String
+  commonHealthIssues: [String!]
+}
+
+type Age {
+  years: Int
+  months: Int
+  birthDate: Date
+  lifeStage: String
+}
+
+type Weight {
+  value: Float!
+  unit: String!
+  recordedAt: DateTime!
+}
+
+type Health {
+  petId: ID!
+  allergies: [String!]
+  medications: [String!]
+  conditions: [String!]
+  dietaryRestrictions: [String!]
+  veterinarian: String
+  lastCheckupDate: Date
+  nextCheckupDate: Date
+  notes: String
+}
+
+type VaccinationRecord {
+  id: ID!
+  petId: ID!
+  vaccineName: String!
+  administeredDate: Date!
+  expirationDate: Date
+  administeredBy: String
+  lotNumber: String
+  verifiedAt: DateTime
+}
+
+type PetRecord {
+  id: ID!
+  petId: ID!
+  recordType: String!
+  title: String!
+  description: String
+  date: Date!
+  provider: String
+  attachmentUrl: URL
+  createdAt: DateTime!
+}
+
+# ─── Product Domain ───────────────────────────────────────────────────────────
+
+type Product {
+  id: ID!
+  sku: SKU!
+  name: String!
+  brand: ProductBrand
+  category: ProductCategory!
+  details: ProductDetails!
+  price: Price!
+  inStock: Boolean!
+  imageUrl: URL
+  rating: Float
+  reviewCount: Int
+}
+
+type ProductDetails {
+  productId: ID!
+  description: String
+  ingredients: String
+  weight: String
+  dimensions: String
+  features: [String!]
+  targetPetType: [PetType!]!
+  ageRange: String
+  warnings: String
+  countryOfOrigin: String
+  upc: String
+}
+
+type ProductCategory {
+  id: ID!
+  name: String!
+  slug: String!
+  parentCategory: ProductCategory
+  subcategories: [ProductCategory!]!
+  imageUrl: URL
+  description: String
+}
+
+type ProductBrand {
+  id: ID!
+  name: String!
+  slug: String!
+  logoUrl: URL
+  website: URL
+  description: String
+  isPrivateLabel: Boolean!
+}
+
+type SKU {
+  value: String!
+  variantAttributes: JSON
+  barcode: String
+  inventoryCount: Int
+}
+
+type Price {
+  amount: Float!
+  currency: String!
+  saleAmount: Float
+  isOnSale: Boolean!
+  memberPrice: Float
+  priceValidUntil: DateTime
+}
+
+type PetFood {
+  productId: ID!
+  productLine: String
+  flavor: String
+  lifestage: String
+  formulaType: String
+  primaryProtein: String
+  isGrainFree: Boolean
+  isOrganic: Boolean
+  isWet: Boolean
+  isDry: Boolean
+  caloriesPerCup: Int
+  guaranteedAnalysis: JSON
+}
+
+type Toy {
+  productId: ID!
+  toyType: String
+  material: String
+  isInteractive: Boolean
+  isSqueaky: Boolean
+  isCatnip: Boolean
+  sizeCategory: String
+  recommendedBreedSize: String
+  isSafe: Boolean
+  safetyNotes: String
+}
+
+type Treat {
+  productId: ID!
+  treatType: String
+  flavor: String
+  texture: String
+  calories: Int
+  isTrainingTreat: Boolean
+  isDental: Boolean
+  ingredients: String
+  lifestage: String
+}
+
+type Supplies {
+  productId: ID!
+  supplyType: String
+  material: String
+  isEcoFriendly: Boolean
+  color: String
+  sizeOptions: [String!]
+}
+
+type Aquatics {
+  productId: ID!
+  aquaticType: String
+  waterType: String
+  tankSizeGallons: Float
+  compatibility: String
+  careLevel: String
+  lightRequirement: String
+}
+
+type Bird {
+  productId: ID!
+  birdType: String
+  cageType: String
+  dietType: String
+  socialNeeds: String
+  noiseLevel: String
+}
+
+type Reptile {
+  productId: ID!
+  reptileType: String
+  habitatType: String
+  temperatureRange: String
+  humidityRange: String
+  dietType: String
+  uvRequired: Boolean
+}
+
+type SmallPet {
+  productId: ID!
+  animalType: String
+  habitatType: String
+  dietType: String
+  socialNeeds: String
+  activityLevel: String
+}
+
+type Livestock {
+  productId: ID!
+  livestockType: String
+  feedType: String
+  housingRequirements: String
+  averageLifespan: String
+  careLevel: String
+}
+
+# ─── Adoption Domain ──────────────────────────────────────────────────────────
+
+type Adoption {
+  id: ID!
+  petParentId: ID
+  rescuedAnimal: RescuedAnimal!
+  status: String!
+  applicationDate: DateTime
+  approvedDate: DateTime
+  completedDate: DateTime
+  storeId: ID
+  adoptionEvent: AdoptionEvent
+  fee: Price
+}
+
+type RescuedAnimal {
+  id: ID!
+  name: String!
+  species: Species!
+  breed: Breed
+  age: Age
+  weight: Weight
+  gender: String
+  color: String
+  isNeutered: Boolean
+  isSpayed: Boolean
+  isVaccinated: Boolean
+  isMicrochipped: Boolean
+  photos: [AnimalPhoto!]!
+  bio: String
+  rescuePartner: String
+  availableAt: [Store!]!
+  adoptionFee: Price
+  adoptionEvent: AdoptionEvent
+  intakeDate: Date
+  status: String!
+}
+
+type AdoptionEvent {
+  id: ID!
+  name: String!
+  description: String
+  startDate: DateTime!
+  endDate: DateTime!
+  store: Store!
+  rescuePartner: String
+  animalsAvailable: [RescuedAnimal!]!
+  registrationUrl: URL
+  contactEmail: String
+}
+
+type AnimalPhoto {
+  id: ID!
+  animalId: ID!
+  url: URL!
+  altText: String
+  isPrimary: Boolean!
+  capturedAt: DateTime
+}
+
+# ─── Appointment Domain ────────────────────────────────────────────────────────
+
+type Appointment {
+  id: ID!
+  type: String!
+  pet: Pet!
+  petParent: PetParent!
+  store: Store!
+  scheduledAt: DateTime!
+  durationMinutes: Int
+  status: AppointmentStatus!
+  notes: String
+  cost: Price
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type GroomingAppointment {
+  id: ID!
+  appointment: Appointment!
+  stylist: PetStylist
+  groomingService: GroomingService!
+  addOns: [String!]
+  petSpecialInstructions: String
+  estimatedPickupTime: DateTime
+}
+
+type HotelBooking {
+  id: ID!
+  appointment: Appointment!
+  checkInDate: Date!
+  checkOutDate: Date!
+  suiteType: String!
+  numberOfNights: Int!
+  dailyRate: Price!
+  totalCost: Price!
+  specialRequests: String
+  feedingInstructions: String
+  medicationInstructions: String
+  confirmationNumber: String!
+}
+
+type VetAppointment {
+  id: ID!
+  appointment: Appointment!
+  visitReason: String!
+  veterinarian: String
+  isWellnessVisit: Boolean!
+  banfieldPlanId: String
+  notes: String
+  prescriptions: [String!]
+  followUpDate: Date
+}
+
+# ─── Customer Domain ──────────────────────────────────────────────────────────
+
+type PetParent {
+  id: ID!
+  profile: CustomerProfile!
+  pets: [Pet!]!
+  addresses: [Address!]!
+  paymentMethods: [PaymentMethod!]!
+  loyaltyCard: LoyaltyCard
+  orders: [Order!]!
+  appointments: [Appointment!]!
+  createdAt: DateTime!
+}
+
+type CustomerProfile {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String
+  dateOfBirth: Date
+  communicationPreferences: JSON
+  marketingOptIn: Boolean!
+}
+
+type Address {
+  id: ID!
+  street1: String!
+  street2: String
+  city: String!
+  state: String!
+  postalCode: String!
+  country: String!
+  isDefault: Boolean!
+  label: String
+}
+
+type PaymentMethod {
+  id: ID!
+  type: String!
+  lastFour: String
+  expirationMonth: Int
+  expirationYear: Int
+  isDefault: Boolean!
+  billingAddress: Address
+}
+
+# ─── Loyalty Domain ───────────────────────────────────────────────────────────
+
+type TreatPoints {
+  petParentId: ID!
+  currentBalance: Int!
+  lifetimeEarned: Int!
+  lifetimeRedeemed: Int!
+  pendingPoints: Int!
+  expiringPoints: Int
+  expirationDate: Date
+  transactions: [PointTransaction!]!
+}
+
+type PointTransaction {
+  id: ID!
+  petParentId: ID!
+  points: Int!
+  transactionType: String!
+  description: String!
+  orderId: ID
+  createdAt: DateTime!
+}
+
+type LoyaltyCard {
+  id: ID!
+  cardNumber: String!
+  petParentId: ID!
+  tierLevel: String!
+  points: TreatPoints!
+  rewards: [RewardPoints!]!
+  memberSince: Date!
+  lastUsed: DateTime
+}
+
+type RewardPoints {
+  id: ID!
+  petParentId: ID!
+  rewardType: String!
+  description: String!
+  pointValue: Int
+  dollarValue: Float
+  expirationDate: Date
+  isRedeemed: Boolean!
+  redeemedAt: DateTime
+}
+
+type Promotion {
+  id: ID!
+  title: String!
+  description: String!
+  discountType: String!
+  discountValue: Float
+  minimumPurchase: Float
+  applicableProducts: [Product!]
+  applicableCategories: [ProductCategory!]
+  startDate: DateTime!
+  endDate: DateTime!
+  promoCode: String
+  isPersonalized: Boolean!
+  imageUrl: URL
+}
+
+type Deal {
+  id: ID!
+  title: String!
+  description: String!
+  product: Product
+  category: ProductCategory
+  originalPrice: Price!
+  dealPrice: Price!
+  savingsAmount: Float!
+  savingsPercent: Float!
+  startDate: DateTime!
+  endDate: DateTime!
+  imageUrl: URL
+  badge: String
+}
+
+# ─── Order Domain ─────────────────────────────────────────────────────────────
+
+type Order {
+  id: ID!
+  orderNumber: String!
+  petParentId: ID!
+  items: [OrderItem!]!
+  status: OrderStatus!
+  subtotal: Price!
+  taxes: Float!
+  shippingCost: Float!
+  totalAmount: Price!
+  discounts: [OrderDiscount!]
+  shippingAddress: Address
+  billingAddress: Address!
+  paymentMethod: PaymentMethod!
+  shipping: Shipping
+  returnPolicy: ReturnPolicy
+  placedAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type OrderItem {
+  id: ID!
+  orderId: ID!
+  product: Product!
+  quantity: Int!
+  unitPrice: Price!
+  lineTotal: Price!
+  isGift: Boolean
+  giftMessage: String
+}
+
+type OrderStatus {
+  orderId: ID!
+  current: OrderStatusType!
+  history: [OrderStatusEvent!]!
+  estimatedDelivery: DateTime
+  trackingNumber: String
+  carrier: String
+}
+
+type OrderStatusEvent {
+  status: OrderStatusType!
+  occurredAt: DateTime!
+  location: String
+  message: String
+}
+
+type OrderDiscount {
+  id: ID!
+  description: String!
+  discountAmount: Float!
+  promotionId: ID
+  promoCode: String
+}
+
+type Shipping {
+  orderId: ID!
+  method: ShippingMethod!
+  carrier: String
+  trackingNumber: String
+  estimatedDelivery: DateTime
+  shippedAt: DateTime
+  deliveredAt: DateTime
+  shippingAddress: Address!
+}
+
+type ReturnPolicy {
+  id: ID!
+  description: String!
+  returnWindowDays: Int!
+  requiresReceipt: Boolean!
+  acceptsOpenItems: Boolean!
+  refundMethods: [String!]!
+  exceptions: [String!]
+  policyUrl: URL
+}
+
+# ─── Auth Domain ──────────────────────────────────────────────────────────────
+
+type APIKey {
+  id: ID!
+  key: String!
+  name: String!
+  createdAt: DateTime!
+  expiresAt: DateTime
+  scopes: [String!]!
+  isActive: Boolean!
+  lastUsedAt: DateTime
+}
+
+type Token {
+  type: TokenType!
+  accessToken: String!
+  refreshToken: String
+  expiresIn: Int!
+  expiresAt: DateTime!
+  scopes: [String!]!
+  issuedAt: DateTime!
+}
+
+# ─── Input Types ──────────────────────────────────────────────────────────────
+
+input PetProfileInput {
+  name: String!
+  speciesId: ID!
+  breedId: ID
+  birthDate: Date
+  color: String
+  microchipId: String
+  isNeutered: Boolean
+  isSpayed: Boolean
+  photoUrl: URL
+  notes: String
+}
+
+input GroomingAppointmentInput {
+  petId: ID!
+  storeId: ID!
+  groomingServiceId: ID!
+  scheduledAt: DateTime!
+  stylistId: ID
+  addOns: [String!]
+  petSpecialInstructions: String
+}
+
+input HotelBookingInput {
+  petId: ID!
+  storeId: ID!
+  checkInDate: Date!
+  checkOutDate: Date!
+  suiteType: String!
+  specialRequests: String
+  feedingInstructions: String
+  medicationInstructions: String
+}
+
+input TrainingClassInput {
+  petId: ID!
+  classId: ID!
+  petParentId: ID!
+  paymentMethodId: ID!
+}
+
+input VetAppointmentInput {
+  petId: ID!
+  storeId: ID!
+  scheduledAt: DateTime!
+  visitReason: String!
+  isWellnessVisit: Boolean!
+  banfieldPlanId: String
+  notes: String
+}
+
+input OrderInput {
+  petParentId: ID!
+  items: [OrderItemInput!]!
+  shippingAddressId: ID
+  billingAddressId: ID!
+  paymentMethodId: ID!
+  shippingMethod: ShippingMethod!
+  promoCode: String
+}
+
+input OrderItemInput {
+  productId: ID!
+  quantity: Int!
+  isGift: Boolean
+  giftMessage: String
+}
+
+input VaccinationRecordInput {
+  vaccineName: String!
+  administeredDate: Date!
+  expirationDate: Date
+  administeredBy: String
+  lotNumber: String
+}
+
+# ─── Root Types ───────────────────────────────────────────────────────────────
+
+type Query {
+  store(id: ID!): Store
+  stores(zip: String, radius: Int, services: [StoreServiceType]): [Store!]!
+  product(id: ID!): Product
+  products(category: String, brand: String, petType: PetType, limit: Int, offset: Int): [Product!]!
+  petFood(productId: ID!): PetFood
+  pet(id: ID!): Pet
+  petParent(id: ID!): PetParent
+  appointments(petParentId: ID!, upcoming: Boolean): [Appointment!]!
+  adoptionEvents(zip: String, radius: Int): [AdoptionEvent!]!
+  rescuedAnimals(species: SpeciesType, zip: String, storeId: ID): [RescuedAnimal!]!
+  order(id: ID!): Order
+  orders(petParentId: ID!, status: OrderStatusType): [Order!]!
+  promotions(petParentId: ID): [Promotion!]!
+  deals(petType: PetType, category: String): [Deal!]!
+  treatPoints(petParentId: ID!): TreatPoints
+  species: [Species!]!
+  breeds(speciesId: ID!): [Breed!]!
+}
+
+type Mutation {
+  createPetProfile(petParentId: ID!, input: PetProfileInput!): Pet!
+  updatePetProfile(id: ID!, input: PetProfileInput!): Pet!
+  deletePetProfile(id: ID!): Boolean!
+  addVaccinationRecord(petId: ID!, input: VaccinationRecordInput!): VaccinationRecord!
+  bookGroomingAppointment(input: GroomingAppointmentInput!): GroomingAppointment!
+  bookHotelReservation(input: HotelBookingInput!): HotelBooking!
+  enrollTrainingClass(input: TrainingClassInput!): Appointment!
+  scheduleVetAppointment(input: VetAppointmentInput!): VetAppointment!
+  cancelAppointment(id: ID!, reason: String): Appointment!
+  addToCart(productId: ID!, quantity: Int!, petParentId: ID!): Order!
+  placeOrder(input: OrderInput!): Order!
+  cancelOrder(id: ID!, reason: String): Order!
+  redeemPoints(petParentId: ID!, points: Int!, orderId: ID): RewardPoints!
+  createAPIKey(name: String!, scopes: [String!]!): APIKey!
+  revokeAPIKey(id: ID!): Boolean!
+  generateToken(apiKeyId: ID!): Token!
+}
