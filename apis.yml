@@ -4,7 +4,7 @@ description: PetSmart is a North American chain of retail stores selling special
   pet supplies, services, and small companion animals. This repository tracks any
   publicly available APIs, SDKs, and developer resources for PetSmart.
 kind: contract
-image: https://kinlane-productions.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
 tags:
 - Retail
 - Pets
