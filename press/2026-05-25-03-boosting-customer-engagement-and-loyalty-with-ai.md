@@ -1,7 +1,9 @@
 ---
 title: Boosting Customer Engagement and Loyalty With AI ...
 url: https://www.databricks.com/customers/petsmart/ai
-date: '2026-05-25'
+published: ''
+date_basis: harvested
+harvested: '2026-05-25'
 query: '"PetSmart" press release artificial intelligence'
 position: 3
 source: serpapi-google

@@ -1,7 +1,9 @@
 ---
 title: Petlibro Expands Access to AI-Powered Luma Smart Litter ...
 url: https://www.prnewswire.com/news-releases/petlibro-expands-access-to-ai-powered-luma-smart-litter-box-with-petsmart-launch-302715600.html
-date: '2026-05-25'
+published: ''
+date_basis: harvested
+harvested: '2026-05-25'
 query: '"PetSmart" press release artificial intelligence'
 position: 1
 source: serpapi-google

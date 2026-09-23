@@ -1,7 +1,9 @@
 ---
 title: How PetSmart is using AI in its revamped loyalty program
 url: https://www.modernretail.co/marketing/how-petsmart-is-using-ai-in-its-revamped-loyalty-program/
-date: '2026-05-25'
+published: ''
+date_basis: harvested
+harvested: '2026-05-25'
 query: '"PetSmart" press release artificial intelligence'
 position: 4
 source: serpapi-google
