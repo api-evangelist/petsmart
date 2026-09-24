@@ -53,8 +53,6 @@ common:
   url: https://www.petsmart.com/help/terms-and-conditions-A0021.html
 - type: PrivacyPolicy
   url: https://www.petsmart.com/help/privacy-policy-A0020.html
-- url: graphql/petsmart-graphql.md
-  type: GraphQL
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
